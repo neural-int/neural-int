@@ -49,8 +49,17 @@ const COLUMN_GAP = 3;
 const LEFT_WIDTH = BODY_WIDTH - LOGO_WIDTH - COLUMN_GAP;
 const ansiPattern = /\u001b\[[0-9;]*m/g;
 
-const visibleLength = (text) =>
-  Array.from(text.replace(ansiPattern, "")).length;
+const visibleLength = (text) => {
+  const chars = Array.from(text.replace(ansiPattern, ""));
+  let width = 0;
+
+  for (const char of chars) {
+    if (/\p{Mark}|\uFE0F|\u200D/u.test(char)) continue;
+    width += /\p{Extended_Pictographic}/u.test(char) ? 2 : 1;
+  }
+
+  return width;
+};
 
 const row = (content = "") => {
   const padding = Math.max(0, BODY_WIDTH - visibleLength(content));
@@ -75,10 +84,10 @@ const columns = (left = "", right = "") => {
 const top = palette.border(`╭${"─".repeat(BODY_WIDTH + 2)}╮`);
 const bottom = palette.border(`╰${"─".repeat(BODY_WIDTH + 2)}╯`);
 
-const info = (key, value, comma = true) =>
-  `    ${palette.key(key.padEnd(8))}${palette.punctuation(": ")}${palette.value(
+const info = (icon, key, value) =>
+  `  ${icon} ${palette.key(key.padEnd(8))}${palette.punctuation(": ")}${palette.value(
     `"${value}"`
-  )}${comma ? palette.punctuation(",") : ""}`;
+  )}`;
 
 const logo = [
   "    ██████",
@@ -99,13 +108,13 @@ const lines = [
   row(columns(palette.name("Natsuki Izumi"), logo[0])),
   row(columns(palette.muted("Software Engineer"), logo[1])),
   row(columns("", logo[2])),
-  row(columns(`${palette.keyword("INFO")} ${palette.punctuation("{")}`, logo[3])),
-  row(columns(info("Email", "me@natsuki123.com"), logo[4])),
-  row(columns(info("Website", "https://natsuki123.com"), logo[5])),
-  row(columns(info("GitHub", "https://github.com/neural-int"), logo[6])),
-  row(columns(info("Threads", "https://www.threads.com/@natsuki123_engineer"), logo[7])),
-  row(columns(info("X", "@natsuki123_x", false), logo[8])),
-  row(columns(palette.punctuation("}"), logo[9])),
+  row(columns(`${palette.keyword("INFO")}${palette.punctuation(":")}`, logo[3])),
+  row(columns(info("✉️", "Email", "me@natsuki123.com"), logo[4])),
+  row(columns(info("🌐", "Website", "https://natsuki123.com"), logo[5])),
+  row(columns(info("🐙", "GitHub", "https://github.com/neural-int"), logo[6])),
+  row(columns(info("🧵", "Threads", "https://www.threads.com/@natsuki123_engineer"), logo[7])),
+  row(columns(info("𝕏", "X", "@natsuki123_x"), logo[8])),
+  row(columns("", logo[9])),
   row(),
   row(
     palette.muted(

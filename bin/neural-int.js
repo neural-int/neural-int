@@ -44,7 +44,6 @@ const palette = {
 };
 
 const BODY_WIDTH = 84;
-const LOGO_COLUMN = 31;
 const ansiPattern = /\u001b\[[0-9;]*m/g;
 
 const visibleLength = (text) => {
@@ -71,9 +70,9 @@ const row = (content = "") => {
   );
 };
 
-const headerRow = (left = "", logoLine = "") => {
-  const padding = Math.max(3, LOGO_COLUMN - visibleLength(left));
-  return left + " ".repeat(padding) + logoLine;
+const centerBlockLine = (line, blockWidth) => {
+  const leftPadding = Math.max(0, Math.floor((BODY_WIDTH - blockWidth) / 2));
+  return " ".repeat(leftPadding) + line;
 };
 
 const top = palette.border(`╭${"─".repeat(BODY_WIDTH + 2)}╮`);
@@ -99,20 +98,16 @@ const logo = [
   "   ⢸⣿⠇    ⢸⣿⣿⣿⣿⣿⡆",
 ].map(palette.logo);
 
+const logoWidth = Math.max(...logo.map(visibleLength));
+const nameLine =
+  `${palette.key("name")}${palette.punctuation(": ")}${palette.value("Natsuki Izumi")}`;
+
 const lines = [
   top,
   row(),
-  row(headerRow(palette.name("Natsuki Izumi"), logo[0])),
-  row(headerRow("", logo[1])),
-  row(headerRow("", logo[2])),
-  row(headerRow("", logo[3])),
-  row(headerRow("", logo[4])),
-  row(headerRow("", logo[5])),
-  row(headerRow("", logo[6])),
-  row(headerRow("", logo[7])),
-  row(headerRow("", logo[8])),
-  row(headerRow("", logo[9])),
+  ...logo.map((line) => row(centerBlockLine(line, logoWidth))),
   row(),
+  row(nameLine),
   row(`${palette.keyword("INFO")}${palette.punctuation(":")}`),
   row(info("💼", "Role", "Software Engineer")),
   row(info("✉️", "Email", "me@natsuki123.com")),

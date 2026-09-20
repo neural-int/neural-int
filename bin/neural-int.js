@@ -110,15 +110,16 @@ const logo = [
 ].map(palette.logo);
 
 const logoWidth = Math.max(...logo.map(visibleLength));
-const nameLine =
-  `${palette.key("name")}${palette.punctuation(": ")}${palette.value("Natsuki Izumi")}`;
+const nameLine = palette.name("Natsuki Izumi");
+const dividerLine = palette.border("─".repeat(32));
 
 const lines = [
   top,
   row(),
   ...logo.map((line) => row(centerBlockLine(line, logoWidth))),
   row(),
-  row(" ".repeat(INFO_INDENT) + nameLine),
+  row(centerLine(nameLine)),
+  row(centerLine(dividerLine)),
   row(centerLine(`${palette.keyword("INFO")}${palette.punctuation(":")}`)),
   row(info("💼", "Role", "Software Engineer")),
   row(info("✉️", "Email", "me@natsuki123.com")),

@@ -128,12 +128,12 @@ const info = (icon, key, value) => {
 };
 
 const socialInfo = (leftKey, leftValue, rightKey, rightValue) => {
-  const left = `${palette.key(leftKey.padEnd(KEY_WIDTH))}${palette.punctuation(
-    ": "
-  )}${palette.value(leftValue)}`;
-  const right = `${palette.key(rightKey.padEnd(KEY_WIDTH))}${palette.punctuation(
-    ": "
-  )}${palette.value(rightValue)}`;
+  const left = `${palette.key(leftKey)}${palette.punctuation(": ")}${palette.value(
+    leftValue
+  )}`;
+  const right = `${palette.key(rightKey)}${palette.punctuation(": ")}${palette.value(
+    rightValue
+  )}`;
   const line = left + "    " + right;
 
   return centerLine(line);

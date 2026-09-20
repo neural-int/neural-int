@@ -185,105 +185,63 @@ const shouldAnimate =
 const CSI = "\u001b[";
 const HIDE_CURSOR = `${CSI}?25l`;
 const SHOW_CURSOR = `${CSI}?25h`;
-const SAVE_CURSOR = `${CSI}s`;
-const RESTORE_CURSOR = `${CSI}u`;
 
 const sleep = (ms) =>
   new Promise((resolve) => {
     setTimeout(resolve, ms);
   });
 
-const positionFromOrigin = (rowOffset, column) => {
-  const down = rowOffset > 0 ? `${CSI}${rowOffset}B` : "";
-  return RESTORE_CURSOR + down + `${CSI}${column}G`;
+const moveToFrameTop = () =>
+  "\r" + (CARD_HEIGHT > 1 ? `${CSI}${CARD_HEIGHT - 1}A` : "");
+
+const renderFrame = (frame, redraw = false) => {
+  const prefix = redraw ? moveToFrameTop() : "";
+  process.stdout.write(prefix + frame.join("\r\n"));
 };
 
-const writeAt = (rowOffset, column, text) => {
-  process.stdout.write(positionFromOrigin(rowOffset, column) + text);
-};
+const buildBorderFrame = (progress) => {
+  const clamped = Math.max(0, Math.min(1, progress));
+  const horizontalLength =
+    1 + Math.floor((CARD_WIDTH - 1) * clamped);
+  const verticalLength =
+    Math.floor((CARD_HEIGHT - 2) * clamped);
 
-const reserveCardArea = () => {
-  process.stdout.write(HIDE_CURSOR + "\r");
-  if (CARD_HEIGHT > 1) {
-    process.stdout.write("\r\n".repeat(CARD_HEIGHT - 1));
-    process.stdout.write(`${CSI}${CARD_HEIGHT - 1}A\r`);
-  }
-  process.stdout.write(SAVE_CURSOR);
-};
+  const topLine =
+    horizontalLength >= CARD_WIDTH
+      ? palette.borderCyan(
+          `╔${"═".repeat(CARD_WIDTH - 2)}╗`
+        )
+      : palette.borderCyan(
+          `╔${"═".repeat(Math.max(0, horizontalLength - 1))}`
+        ) + " ".repeat(CARD_WIDTH - horizontalLength);
 
-const drawBorderAnimation = async () => {
-  writeAt(0, 1, palette.borderCyan("╔"));
-  writeAt(CARD_HEIGHT - 1, CARD_WIDTH, palette.borderCoral("╝"));
+  const bottomLine =
+    horizontalLength >= CARD_WIDTH
+      ? palette.borderCoral(
+          `╚${"═".repeat(CARD_WIDTH - 2)}╝`
+        )
+      : " ".repeat(CARD_WIDTH - horizontalLength) +
+        palette.borderCoral(
+          `${"═".repeat(Math.max(0, horizontalLength - 1))}╝`
+        );
 
-  const maxSteps = Math.max(CARD_WIDTH - 1, CARD_HEIGHT - 1);
-  let previousTopColumn = 1;
-  let previousLeftRow = 1;
-  let previousBottomColumn = CARD_WIDTH;
-  let previousRightRow = CARD_HEIGHT;
+  const frame = [topLine];
 
-  for (let step = 1; step <= maxSteps; step += 1) {
-    const progress = step / maxSteps;
+  for (let rowIndex = 1; rowIndex < CARD_HEIGHT - 1; rowIndex += 1) {
+    const showLeft = rowIndex <= verticalLength;
+    const showRight =
+      rowIndex >= CARD_HEIGHT - 1 - verticalLength;
+    const middle = " ".repeat(CARD_WIDTH - 2);
 
-    const topColumn =
-      1 + Math.floor((CARD_WIDTH - 1) * progress);
-    if (topColumn > previousTopColumn) {
-      writeAt(
-        0,
-        previousTopColumn + 1,
-        palette.borderCyan("═".repeat(topColumn - previousTopColumn))
-      );
-      previousTopColumn = topColumn;
-    }
-
-    const leftRow =
-      1 + Math.floor((CARD_HEIGHT - 1) * progress);
-    while (previousLeftRow < leftRow) {
-      previousLeftRow += 1;
-      writeAt(previousLeftRow - 1, 1, palette.borderCyan("║"));
-    }
-
-    const bottomColumn =
-      CARD_WIDTH - Math.floor((CARD_WIDTH - 1) * progress);
-    if (bottomColumn < previousBottomColumn) {
-      writeAt(
-        CARD_HEIGHT - 1,
-        bottomColumn,
-        palette.borderCoral("═".repeat(previousBottomColumn - bottomColumn))
-      );
-      previousBottomColumn = bottomColumn;
-    }
-
-    const rightRow =
-      CARD_HEIGHT - Math.floor((CARD_HEIGHT - 1) * progress);
-    while (previousRightRow > rightRow) {
-      previousRightRow -= 1;
-      writeAt(previousRightRow - 1, CARD_WIDTH, palette.borderCoral("║"));
-    }
-
-    await sleep(6);
+    frame.push(
+      (showLeft ? palette.borderCyan("║") : " ") +
+        middle +
+        (showRight ? palette.borderCoral("║") : " ")
+    );
   }
 
-  writeAt(0, 1, palette.borderCyan("╔"));
-  writeAt(0, CARD_WIDTH, palette.borderCyan("╗"));
-  writeAt(CARD_HEIGHT - 1, 1, palette.borderCoral("╚"));
-  writeAt(CARD_HEIGHT - 1, CARD_WIDTH, palette.borderCoral("╝"));
-};
-
-const revealContent = async () => {
-  await sleep(80);
-
-  for (let index = 1; index < CARD_HEIGHT - 1; index += 1) {
-    writeAt(index, 1, lines[index]);
-    if (lines[index].replace(ansiPattern, "").trim()) {
-      await sleep(14);
-    }
-  }
-};
-
-const finishAnimatedOutput = () => {
-  process.stdout.write(
-    positionFromOrigin(CARD_HEIGHT - 1, 1) + "\r\n" + SHOW_CURSOR
-  );
+  frame.push(bottomLine);
+  return frame;
 };
 
 const renderAnimatedCard = async () => {
@@ -293,7 +251,7 @@ const renderAnimatedCard = async () => {
     if (cursorHidden) {
       process.stdout.write(SHOW_CURSOR);
     }
-    process.stdout.write("\n");
+    process.stdout.write("\r\n");
     process.exit(signal === "SIGINT" ? 130 : 143);
   };
 
@@ -301,11 +259,20 @@ const renderAnimatedCard = async () => {
   process.once("SIGTERM", restoreCursorAndExit);
 
   try {
-    reserveCardArea();
+    process.stdout.write(HIDE_CURSOR);
     cursorHidden = true;
-    await drawBorderAnimation();
-    await revealContent();
-    finishAnimatedOutput();
+
+    const steps = 28;
+    renderFrame(buildBorderFrame(0));
+
+    for (let step = 1; step <= steps; step += 1) {
+      await sleep(12);
+      renderFrame(buildBorderFrame(step / steps), true);
+    }
+
+    await sleep(90);
+    renderFrame(lines, true);
+    process.stdout.write("\r\n" + SHOW_CURSOR);
     cursorHidden = false;
   } finally {
     process.removeListener("SIGINT", restoreCursorAndExit);
@@ -319,7 +286,7 @@ const renderAnimatedCard = async () => {
 
 if (shouldAnimate) {
   renderAnimatedCard().catch((error) => {
-    process.stdout.write(SHOW_CURSOR);
+    process.stdout.write(SHOW_CURSOR + "\r\n");
     console.error(error);
     process.exitCode = 1;
   });

@@ -45,10 +45,10 @@ const palette = {
   punctuation: (text) => paint("38;5;250", text),
 };
 
-const BODY_WIDTH = 84;
+// 64 columns keeps the 21-row card close to a physical business-card ratio
+// on common monospace terminals, while leaving enough room for all content.
+const BODY_WIDTH = 64;
 const RIGHT_BORDER_COLUMN = BODY_WIDTH + 4;
-const KEY_COLUMN = 10;
-const SOCIAL_RIGHT_COLUMN = 50;
 const INFO_BLOCK_WIDTH = 44;
 const INFO_ICON_COLUMN = 3 + Math.floor((BODY_WIDTH - INFO_BLOCK_WIDTH) / 2);
 const INFO_KEY_COLUMN = INFO_ICON_COLUMN + 4;
@@ -99,7 +99,6 @@ const centerLine = (line) =>
 const top = palette.borderCyan(`╔${"═".repeat(BODY_WIDTH + 2)}╗`);
 const bottom = palette.borderCoral(`╚${"═".repeat(BODY_WIDTH + 2)}╝`);
 
-const INFO_INDENT = 4;
 const ICON_WIDTH = 2;
 const KEY_WIDTH = 8;
 
@@ -135,19 +134,9 @@ const socialInfo = (leftKey, leftValue, rightKey, rightValue) => {
   const right = `${palette.key(rightKey.padEnd(KEY_WIDTH))}${palette.punctuation(
     ": "
   )}${palette.value(rightValue)}`;
+  const line = left + "    " + right;
 
-  if (useTerminalLayout) {
-    return (
-      " ".repeat(INFO_INDENT) +
-      `\u001b[${KEY_COLUMN}G` +
-      left +
-      `\u001b[${SOCIAL_RIGHT_COLUMN}G` +
-      right
-    );
-  }
-
-  const gap = Math.max(4, SOCIAL_RIGHT_COLUMN - KEY_COLUMN - visibleLength(left));
-  return " ".repeat(INFO_INDENT) + left + " ".repeat(gap) + right;
+  return centerLine(line);
 };
 
 const logo = [

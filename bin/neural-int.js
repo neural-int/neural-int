@@ -34,7 +34,7 @@ const paint = (code, text) =>
 
 const palette = {
   border: (text) => paint("38;5;240", text),
-  logo: (text) => paint("1;38;5;255", text),
+  logo: (text) => paint("38;5;250", text),
   name: (text) => paint("1;38;5;255", text),
   muted: (text) => paint("38;5;246", text),
   keyword: (text) => paint("1;38;5;114", text),
@@ -44,6 +44,7 @@ const palette = {
 };
 
 const BODY_WIDTH = 84;
+const LOGO_COLUMN = 31;
 const ansiPattern = /\u001b\[[0-9;]*m/g;
 
 const visibleLength = (text) => {
@@ -70,6 +71,11 @@ const row = (content = "") => {
   );
 };
 
+const headerRow = (left = "", logoLine = "") => {
+  const padding = Math.max(3, LOGO_COLUMN - visibleLength(left));
+  return left + " ".repeat(padding) + logoLine;
+};
+
 const top = palette.border(`╭${"─".repeat(BODY_WIDTH + 2)}╮`);
 const bottom = palette.border(`╰${"─".repeat(BODY_WIDTH + 2)}╯`);
 
@@ -78,14 +84,34 @@ const info = (icon, key, value) =>
     `"${value}"`
   )}`;
 
-const compactLogo = "⣠⣾⣿⠟⠁⢐⣶⡀";
-const wordmark =
-  `${palette.name("Natsuki Izumi")}  ${palette.logo(compactLogo)}`;
+// Generated from the Illustrator business-card logo at a 40×40-dot source grid.
+// Each Braille cell encodes a 2×4 dot matrix for higher terminal resolution.
+const logo = [
+  "   ⢀⣾⣿⣿⣿⣿⣿",
+  "   ⢸⣿⣿⣿⣿⣿⡟⢀⣀⣀⣀⣀⣀",
+  "   ⢸⣿⣿⣿⣿⣿⠁⠸⣿⣿⣿⣿⣿⠃",
+  "   ⢸⣿⣿⣿⣿⡏  ⠘⣿⣿⡿⠁",
+  "   ⢸⣿⣿⣿⣿⠁   ⠘⠟⠁",
+  "   ⢸⣿⣿⣿⡏    ⢠⣿⡀",
+  "   ⢸⣿⣿⣿⠁    ⣾⣿⣧",
+  "   ⢸⣿⣿⡇    ⢰⣿⣿⣿⡄",
+  "   ⢸⣿⣿     ⣿⣿⣿⣿⣧",
+  "   ⢸⣿⠇    ⢸⣿⣿⣿⣿⣿⡆",
+].map(palette.logo);
 
 const lines = [
   top,
   row(),
-  row(wordmark),
+  row(headerRow(palette.name("Natsuki Izumi"), logo[0])),
+  row(headerRow("", logo[1])),
+  row(headerRow("", logo[2])),
+  row(headerRow("", logo[3])),
+  row(headerRow("", logo[4])),
+  row(headerRow("", logo[5])),
+  row(headerRow("", logo[6])),
+  row(headerRow("", logo[7])),
+  row(headerRow("", logo[8])),
+  row(headerRow("", logo[9])),
   row(),
   row(`${palette.keyword("INFO")}${palette.punctuation(":")}`),
   row(info("💼", "Role", "Software Engineer")),

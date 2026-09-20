@@ -34,7 +34,7 @@ const paint = (code, text) =>
 
 const palette = {
   border: (text) => paint("38;5;240", text),
-  logo: (text) => paint("38;5;255", text),
+  logo: (text) => paint("1;38;5;255", text),
   name: (text) => paint("1;38;5;255", text),
   muted: (text) => paint("38;5;246", text),
   keyword: (text) => paint("1;38;5;114", text),
@@ -44,9 +44,6 @@ const palette = {
 };
 
 const BODY_WIDTH = 84;
-const LOGO_WIDTH = 16;
-const COLUMN_GAP = 3;
-const LEFT_WIDTH = BODY_WIDTH - LOGO_WIDTH - COLUMN_GAP;
 const ansiPattern = /\u001b\[[0-9;]*m/g;
 
 const visibleLength = (text) => {
@@ -73,14 +70,6 @@ const row = (content = "") => {
   );
 };
 
-const columns = (left = "", right = "") => {
-  const padding = Math.max(
-    COLUMN_GAP,
-    LEFT_WIDTH - visibleLength(left) + COLUMN_GAP
-  );
-  return left + " ".repeat(padding) + right;
-};
-
 const top = palette.border(`╭${"─".repeat(BODY_WIDTH + 2)}╮`);
 const bottom = palette.border(`╰${"─".repeat(BODY_WIDTH + 2)}╯`);
 
@@ -89,32 +78,22 @@ const info = (icon, key, value) =>
     `"${value}"`
   )}`;
 
-const logo = [
-  "    ██████",
-  "   ▄█████",
-  "   ██████ ▀████▀",
-  "  ▄█████   ▀██▀",
-  "  ██████    ▀▀",
-  "  █████     ▄█",
-  " █████▀     ██",
-  " █████     ▄███",
-  "██████     ████",
-  "█████     ▀█████",
-].map(palette.logo);
+const compactLogo = "⣠⣾⣿⠟⠁⢐⣶⡀";
+const wordmark =
+  `${palette.name("Natsuki Izumi")}  ${palette.logo(compactLogo)}`;
 
 const lines = [
   top,
   row(),
-  row(columns(palette.name("Natsuki Izumi"), logo[0])),
-  row(columns(palette.muted("Software Engineer"), logo[1])),
-  row(columns("", logo[2])),
-  row(columns(`${palette.keyword("INFO")}${palette.punctuation(":")}`, logo[3])),
-  row(columns(info("✉️", "Email", "me@natsuki123.com"), logo[4])),
-  row(columns(info("🌐", "Website", "https://natsuki123.com"), logo[5])),
-  row(columns(info("🐙", "GitHub", "https://github.com/neural-int"), logo[6])),
-  row(columns(info("🧵", "Threads", "https://www.threads.com/@natsuki123_engineer"), logo[7])),
-  row(columns(info("𝕏", "X", "@natsuki123_x"), logo[8])),
-  row(columns("", logo[9])),
+  row(wordmark),
+  row(),
+  row(`${palette.keyword("INFO")}${palette.punctuation(":")}`),
+  row(info("💼", "Role", "Software Engineer")),
+  row(info("✉️", "Email", "me@natsuki123.com")),
+  row(info("🌐", "Website", "https://natsuki123.com")),
+  row(info("🐙", "GitHub", "https://github.com/neural-int")),
+  row(info("🧵", "Threads", "https://www.threads.com/@natsuki123_engineer")),
+  row(info("𝕏", "X", "@natsuki123_x")),
   row(),
   row(
     palette.muted(

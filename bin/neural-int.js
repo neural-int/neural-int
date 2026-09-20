@@ -137,6 +137,7 @@ const logo = [
 const logoWidth = Math.max(...logo.map(visibleLength));
 const nameLine = palette.name("Natsuki Izumi");
 const dividerLine = palette.divider("─".repeat(32));
+const socialDividerLine = palette.divider("─".repeat(Math.floor(BODY_WIDTH * 0.8)));
 
 const lines = [
   top,
@@ -150,7 +151,8 @@ const lines = [
   row(info("✉️", "Email", "me@natsuki123.com")),
   row(info("🌐", "Website", "https://natsuki123.com")),
   row(info("🐙", "GitHub", "https://github.com/neural-int")),
-  row(info("🧵", "Threads", "https://www.threads.com/@natsuki123_engineer")),
+  row(centerLine(socialDividerLine)),
+  row(info("🧵", "Threads", "@natsuki123_engineer")),
   row(info("𝕏", "X", "@natsuki123_x")),
   row(),
   row(

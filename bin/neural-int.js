@@ -61,12 +61,12 @@ const visibleLength = (text) => {
 const row = (content = "") => {
   const padding = Math.max(0, BODY_WIDTH - visibleLength(content));
   return (
-    palette.border("│") +
+    palette.border("║") +
     " " +
     content +
     " ".repeat(padding) +
     " " +
-    palette.border("│")
+    palette.border("║")
   );
 };
 
@@ -75,13 +75,23 @@ const centerBlockLine = (line, blockWidth) => {
   return " ".repeat(leftPadding) + line;
 };
 
-const top = palette.border(`╭${"─".repeat(BODY_WIDTH + 2)}╮`);
-const bottom = palette.border(`╰${"─".repeat(BODY_WIDTH + 2)}╯`);
+const centerLine = (line) =>
+  centerBlockLine(line, visibleLength(line));
+
+const top = palette.border(`╔${"═".repeat(BODY_WIDTH + 2)}╗`);
+const bottom = palette.border(`╚${"═".repeat(BODY_WIDTH + 2)}╝`);
+
+const INFO_INDENT = 4;
+const ICON_WIDTH = 2;
+const KEY_WIDTH = 8;
+
+const padVisible = (text, width) =>
+  text + " ".repeat(Math.max(0, width - visibleLength(text)));
 
 const info = (icon, key, value) =>
-  `  ${icon} ${palette.key(key.padEnd(8))}${palette.punctuation(": ")}${palette.value(
-    `"${value}"`
-  )}`;
+  `${" ".repeat(INFO_INDENT)}${padVisible(icon, ICON_WIDTH)} ${palette.key(
+    key.padEnd(KEY_WIDTH)
+  )}${palette.punctuation(": ")}${palette.value(value)}`;
 
 // Generated from the Illustrator business-card logo at a 40×40-dot source grid.
 // Each Braille cell encodes a 2×4 dot matrix for higher terminal resolution.
@@ -100,16 +110,17 @@ const logo = [
 ].map(palette.logo);
 
 const logoWidth = Math.max(...logo.map(visibleLength));
-const nameLine =
-  `${palette.key("name")}${palette.punctuation(": ")}${palette.value("Natsuki Izumi")}`;
+const nameLine = palette.name("Natsuki Izumi");
+const dividerLine = palette.border("─".repeat(32));
 
 const lines = [
   top,
   row(),
   ...logo.map((line) => row(centerBlockLine(line, logoWidth))),
   row(),
-  row(nameLine),
-  row(`${palette.keyword("INFO")}${palette.punctuation(":")}`),
+  row(centerLine(nameLine)),
+  row(centerLine(dividerLine)),
+  row(centerLine(`${palette.keyword("INFO")}${palette.punctuation(":")}`)),
   row(info("💼", "Role", "Software Engineer")),
   row(info("✉️", "Email", "me@natsuki123.com")),
   row(info("🌐", "Website", "https://natsuki123.com")),

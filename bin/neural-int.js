@@ -23,11 +23,11 @@ if (args.has("--version") || args.has("-v")) {
 }
 
 const forcePlain = args.has("--plain") || args.has("--no-color");
+const isInteractiveTerminal =
+  Boolean(process.stdout.isTTY) && process.env.TERM !== "dumb";
+const useTerminalLayout = !forcePlain && isInteractiveTerminal;
 const useColor =
-  !forcePlain &&
-  Boolean(process.stdout.isTTY) &&
-  process.env.TERM !== "dumb" &&
-  !("NO_COLOR" in process.env);
+  useTerminalLayout && !("NO_COLOR" in process.env);
 
 const paint = (code, text) =>
   useColor ? `\u001b[${code}m${text}\u001b[0m` : text;
@@ -44,7 +44,9 @@ const palette = {
 };
 
 const BODY_WIDTH = 84;
-const ansiPattern = /\u001b\[[0-9;]*m/g;
+const RIGHT_BORDER_COLUMN = BODY_WIDTH + 4;
+const KEY_COLUMN = 10;
+const ansiPattern = /\u001b\[[0-?]*[ -/]*[@-~]/g;
 
 const visibleLength = (text) => {
   const chars = Array.from(text.replace(ansiPattern, ""));
@@ -59,6 +61,16 @@ const visibleLength = (text) => {
 };
 
 const row = (content = "") => {
+  if (useTerminalLayout) {
+    return (
+      palette.border("║") +
+      " " +
+      content +
+      `\u001b[${RIGHT_BORDER_COLUMN}G` +
+      palette.border("║")
+    );
+  }
+
   const padding = Math.max(0, BODY_WIDTH - visibleLength(content));
   return (
     palette.border("║") +
@@ -88,10 +100,27 @@ const KEY_WIDTH = 8;
 const padVisible = (text, width) =>
   text + " ".repeat(Math.max(0, width - visibleLength(text)));
 
-const info = (icon, key, value) =>
-  `${" ".repeat(INFO_INDENT)}${padVisible(icon, ICON_WIDTH)} ${palette.key(
-    key.padEnd(KEY_WIDTH)
-  )}${palette.punctuation(": ")}${palette.value(value)}`;
+const info = (icon, key, value) => {
+  const keyText = `${palette.key(key.padEnd(KEY_WIDTH))}${palette.punctuation(
+    ": "
+  )}${palette.value(value)}`;
+
+  if (useTerminalLayout) {
+    return (
+      " ".repeat(INFO_INDENT) +
+      icon +
+      `\u001b[${KEY_COLUMN}G` +
+      keyText
+    );
+  }
+
+  return (
+    " ".repeat(INFO_INDENT) +
+    padVisible(icon, ICON_WIDTH) +
+    " " +
+    keyText
+  );
+};
 
 // Generated from the Illustrator business-card logo at a 40×40-dot source grid.
 // Each Braille cell encodes a 2×4 dot matrix for higher terminal resolution.

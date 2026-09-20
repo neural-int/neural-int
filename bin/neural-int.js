@@ -33,11 +33,13 @@ const paint = (code, text) =>
   useColor ? `\u001b[${code}m${text}\u001b[0m` : text;
 
 const palette = {
-  border: (text) => paint("38;5;240", text),
+  borderCyan: (text) => paint("38;2;0;151;178", text),
+  borderCoral: (text) => paint("38;2;204;78;0", text),
+  divider: (text) => paint("38;5;240", text),
   logo: (text) => paint("38;5;250", text),
   name: (text) => paint("1;38;5;255", text),
   muted: (text) => paint("38;5;246", text),
-  keyword: (text) => paint("1;38;5;114", text),
+  keyword: (text) => paint("1;38;5;255", text),
   key: (text) => paint("1;38;5;255", text),
   value: (text) => paint("38;5;215", text),
   punctuation: (text) => paint("38;5;250", text),
@@ -63,22 +65,22 @@ const visibleLength = (text) => {
 const row = (content = "") => {
   if (useTerminalLayout) {
     return (
-      palette.border("║") +
+      palette.borderCyan("║") +
       " " +
       content +
       `\u001b[${RIGHT_BORDER_COLUMN}G` +
-      palette.border("║")
+      palette.borderCoral("║")
     );
   }
 
   const padding = Math.max(0, BODY_WIDTH - visibleLength(content));
   return (
-    palette.border("║") +
+    palette.borderCyan("║") +
     " " +
     content +
     " ".repeat(padding) +
     " " +
-    palette.border("║")
+    palette.borderCoral("║")
   );
 };
 
@@ -90,8 +92,8 @@ const centerBlockLine = (line, blockWidth) => {
 const centerLine = (line) =>
   centerBlockLine(line, visibleLength(line));
 
-const top = palette.border(`╔${"═".repeat(BODY_WIDTH + 2)}╗`);
-const bottom = palette.border(`╚${"═".repeat(BODY_WIDTH + 2)}╝`);
+const top = palette.borderCyan(`╔${"═".repeat(BODY_WIDTH + 2)}╗`);
+const bottom = palette.borderCoral(`╚${"═".repeat(BODY_WIDTH + 2)}╝`);
 
 const INFO_INDENT = 4;
 const ICON_WIDTH = 2;
@@ -134,7 +136,7 @@ const logo = [
 
 const logoWidth = Math.max(...logo.map(visibleLength));
 const nameLine = palette.name("Natsuki Izumi");
-const dividerLine = palette.border("─".repeat(32));
+const dividerLine = palette.divider("─".repeat(32));
 
 const lines = [
   top,
@@ -143,7 +145,7 @@ const lines = [
   row(),
   row(centerLine(nameLine)),
   row(centerLine(dividerLine)),
-  row(centerLine(`${palette.keyword("INFO")}${palette.punctuation(":")}`)),
+  row(centerLine(palette.keyword("INFO:"))),
   row(info("💼", "Role", "Software Engineer")),
   row(info("✉️", "Email", "me@natsuki123.com")),
   row(info("🌐", "Website", "https://natsuki123.com")),

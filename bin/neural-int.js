@@ -48,6 +48,7 @@ const palette = {
 const BODY_WIDTH = 84;
 const RIGHT_BORDER_COLUMN = BODY_WIDTH + 4;
 const KEY_COLUMN = 10;
+const SOCIAL_RIGHT_COLUMN = 50;
 const ansiPattern = /\u001b\[[0-?]*[ -/]*[@-~]/g;
 
 const visibleLength = (text) => {
@@ -124,6 +125,28 @@ const info = (icon, key, value) => {
   );
 };
 
+const socialInfo = (leftKey, leftValue, rightKey, rightValue) => {
+  const left = `${palette.key(leftKey.padEnd(KEY_WIDTH))}${palette.punctuation(
+    ": "
+  )}${palette.value(leftValue)}`;
+  const right = `${palette.key(rightKey.padEnd(KEY_WIDTH))}${palette.punctuation(
+    ": "
+  )}${palette.value(rightValue)}`;
+
+  if (useTerminalLayout) {
+    return (
+      " ".repeat(INFO_INDENT) +
+      `\u001b[${KEY_COLUMN}G` +
+      left +
+      `\u001b[${SOCIAL_RIGHT_COLUMN}G` +
+      right
+    );
+  }
+
+  const gap = Math.max(4, SOCIAL_RIGHT_COLUMN - KEY_COLUMN - visibleLength(left));
+  return " ".repeat(INFO_INDENT) + left + " ".repeat(gap) + right;
+};
+
 const logo = [
   "  ⢰⣿⣿⣿⡟",
   "  ⣾⣿⣿⣿⠃⢶⣶⣶⡶",
@@ -152,14 +175,7 @@ const lines = [
   row(info("🌐", "Website", "https://natsuki123.com")),
   row(info("🐙", "GitHub", "https://github.com/neural-int")),
   row(centerLine(socialDividerLine)),
-  row(info("", "Threads", "@natsuki123_engineer")),
-  row(info("", "X", "@natsuki123_x")),
-  row(),
-  row(
-    palette.muted(
-      `© ${new Date().getFullYear()} Natsuki Izumi / %`
-    )
-  ),
+  row(socialInfo("Threads", "@natsuki123_engineer", "X", "@natsuki123_x")),
   row(),
   bottom,
 ];

@@ -38,7 +38,7 @@ const palette = {
   name: (text) => paint("1;38;5;255", text),
   muted: (text) => paint("38;5;246", text),
   keyword: (text) => paint("1;38;5;114", text),
-  key: (text) => paint("38;5;75", text),
+  key: (text) => paint("1;38;5;255", text),
   value: (text) => paint("38;5;215", text),
   punctuation: (text) => paint("38;5;250", text),
 };
@@ -86,16 +86,17 @@ const info = (icon, key, value) =>
 // Generated from the Illustrator business-card logo at a 40×40-dot source grid.
 // Each Braille cell encodes a 2×4 dot matrix for higher terminal resolution.
 const logo = [
-  "   ⢀⣾⣿⣿⣿⣿⣿",
-  "   ⢸⣿⣿⣿⣿⣿⡟⢀⣀⣀⣀⣀⣀",
-  "   ⢸⣿⣿⣿⣿⣿⠁⠸⣿⣿⣿⣿⣿⠃",
-  "   ⢸⣿⣿⣿⣿⡏  ⠘⣿⣿⡿⠁",
-  "   ⢸⣿⣿⣿⣿⠁   ⠘⠟⠁",
-  "   ⢸⣿⣿⣿⡏    ⢠⣿⡀",
-  "   ⢸⣿⣿⣿⠁    ⣾⣿⣧",
-  "   ⢸⣿⣿⡇    ⢰⣿⣿⣿⡄",
-  "   ⢸⣿⣿     ⣿⣿⣿⣿⣧",
-  "   ⢸⣿⠇    ⢸⣿⣿⣿⣿⣿⡆",
+  "    ⢰⣿⣿⣿⣿⣿⣿",
+  "    ⣼⣿⣿⣿⣿⣿⡇",
+  "   ⢰⣿⣿⣿⣿⣿⣿⠁⠘⣿⣿⣿⣿⣿⡟",
+  "   ⣼⣿⣿⣿⣿⣿⡇  ⠘⣿⣿⣿⠟",
+  "  ⢰⣿⣿⣿⣿⣿⡿    ⠘⢿⠏",
+  "  ⣸⣿⣿⣿⣿⣿⡇     ⣠⡀",
+  " ⢠⣿⣿⣿⣿⣿⡟     ⢠⣿⣇",
+  " ⣸⣿⣿⣿⣿⣿⠇     ⣼⣿⣿⡄",
+  "⢠⣿⣿⣿⣿⣿⡟     ⢰⣿⣿⣿⣇",
+  "⣸⣿⣿⣿⣿⣿⠇     ⣾⣿⣿⣿⣿⡆",
+  "⠿⠿⠿⠿⠿⠟     ⠸⠿⠿⠿⠿⠿⠷",
 ].map(palette.logo);
 
 const logoWidth = Math.max(...logo.map(visibleLength));

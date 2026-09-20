@@ -87,7 +87,7 @@ const lines = [
   row(`${logo[4]}     ${info("Email", "me@natsuki123.com")}`),
   row(`              ${info("Website", "https://natsuki123.com")}`),
   row(`              ${info("GitHub", "https://github.com/neural-int")}`),
-  row(`              ${info("Threads", "@natsuki123_meta")}`),
+  row(`              ${info("Threads", "https://www.threads.com/@natsuki123_engineer")}`),
   row(`              ${info("X", "@natsuki123_x", false)}`),
   row(`              ${palette.punctuation("}")}`),
   row(),

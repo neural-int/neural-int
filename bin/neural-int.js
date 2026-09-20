@@ -152,8 +152,8 @@ const lines = [
   row(info("🌐", "Website", "https://natsuki123.com")),
   row(info("🐙", "GitHub", "https://github.com/neural-int")),
   row(centerLine(socialDividerLine)),
-  row(info("🧵", "Threads", "@natsuki123_engineer")),
-  row(info("𝕏", "X", "@natsuki123_x")),
+  row(info("", "Threads", "@natsuki123_engineer")),
+  row(info("", "X", "@natsuki123_x")),
   row(),
   row(
     palette.muted(

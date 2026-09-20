@@ -81,7 +81,7 @@ const lines = [
   top,
   row(),
   row(`${logo[0]}        ${palette.name("Natsuki Izumi")}`),
-  row(`${logo[1]}      ${palette.muted("Full-stack Engineer")}`),
+  row(`${logo[1]}      ${palette.muted("Software Engineer")}`),
   row(logo[2]),
   row(`${logo[3]}       ${palette.keyword("INFO")} ${palette.punctuation("{")}`),
   row(`${logo[4]}     ${info("Email", "me@natsuki123.com")}`),

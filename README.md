@@ -4,6 +4,14 @@ Frontend engineer building developer tools, web products, and automation with a 
 
 I work mainly with TypeScript and React-based stacks, while expanding into backend and systems tooling where it makes sense.
 
+## Terminal card
+
+```bash
+npx neural-int
+```
+
+A terminal version of my business card, including a compact text rendering of the Neural Integration mark.
+
 ## What I'm building
 
 ### [commiter-cli](https://github.com/neural-int/commiter-cli)

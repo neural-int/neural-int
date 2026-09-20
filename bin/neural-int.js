@@ -11,6 +11,7 @@ Natsuki Izumi's terminal profile card.
 
 Options:
   --plain, --no-color  Disable ANSI colors
+  --no-animation       Disable the intro animation
   -v, --version        Print the package version
   -h, --help           Show this help
 `);
@@ -28,6 +29,7 @@ const isInteractiveTerminal =
 const useTerminalLayout = !forcePlain && isInteractiveTerminal;
 const useColor =
   useTerminalLayout && !("NO_COLOR" in process.env);
+const animationDisabled = args.has("--no-animation");
 
 const paint = (code, text) =>
   useColor ? `\u001b[${code}m${text}\u001b[0m` : text;
@@ -172,4 +174,155 @@ const lines = [
   bottom,
 ];
 
-console.log(lines.join("\n"));
+const CARD_WIDTH = BODY_WIDTH + 4;
+const CARD_HEIGHT = lines.length;
+const terminalIsLargeEnough =
+  (!process.stdout.columns || process.stdout.columns >= CARD_WIDTH) &&
+  (!process.stdout.rows || process.stdout.rows >= CARD_HEIGHT + 1);
+const shouldAnimate =
+  useTerminalLayout && !animationDisabled && terminalIsLargeEnough;
+
+const CSI = "\u001b[";
+const HIDE_CURSOR = `${CSI}?25l`;
+const SHOW_CURSOR = `${CSI}?25h`;
+const SAVE_CURSOR = `${CSI}s`;
+const RESTORE_CURSOR = `${CSI}u`;
+
+const sleep = (ms) =>
+  new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+
+const positionFromOrigin = (rowOffset, column) => {
+  const down = rowOffset > 0 ? `${CSI}${rowOffset}B` : "";
+  return RESTORE_CURSOR + down + `${CSI}${column}G`;
+};
+
+const writeAt = (rowOffset, column, text) => {
+  process.stdout.write(positionFromOrigin(rowOffset, column) + text);
+};
+
+const reserveCardArea = () => {
+  process.stdout.write(HIDE_CURSOR + "\r");
+  if (CARD_HEIGHT > 1) {
+    process.stdout.write("\r\n".repeat(CARD_HEIGHT - 1));
+    process.stdout.write(`${CSI}${CARD_HEIGHT - 1}A\r`);
+  }
+  process.stdout.write(SAVE_CURSOR);
+};
+
+const drawBorderAnimation = async () => {
+  writeAt(0, 1, palette.borderCyan("╔"));
+  writeAt(CARD_HEIGHT - 1, CARD_WIDTH, palette.borderCoral("╝"));
+
+  const maxSteps = Math.max(CARD_WIDTH - 1, CARD_HEIGHT - 1);
+  let previousTopColumn = 1;
+  let previousLeftRow = 1;
+  let previousBottomColumn = CARD_WIDTH;
+  let previousRightRow = CARD_HEIGHT;
+
+  for (let step = 1; step <= maxSteps; step += 1) {
+    const progress = step / maxSteps;
+
+    const topColumn =
+      1 + Math.floor((CARD_WIDTH - 1) * progress);
+    if (topColumn > previousTopColumn) {
+      writeAt(
+        0,
+        previousTopColumn + 1,
+        palette.borderCyan("═".repeat(topColumn - previousTopColumn))
+      );
+      previousTopColumn = topColumn;
+    }
+
+    const leftRow =
+      1 + Math.floor((CARD_HEIGHT - 1) * progress);
+    while (previousLeftRow < leftRow) {
+      previousLeftRow += 1;
+      writeAt(previousLeftRow - 1, 1, palette.borderCyan("║"));
+    }
+
+    const bottomColumn =
+      CARD_WIDTH - Math.floor((CARD_WIDTH - 1) * progress);
+    if (bottomColumn < previousBottomColumn) {
+      writeAt(
+        CARD_HEIGHT - 1,
+        bottomColumn,
+        palette.borderCoral("═".repeat(previousBottomColumn - bottomColumn))
+      );
+      previousBottomColumn = bottomColumn;
+    }
+
+    const rightRow =
+      CARD_HEIGHT - Math.floor((CARD_HEIGHT - 1) * progress);
+    while (previousRightRow > rightRow) {
+      previousRightRow -= 1;
+      writeAt(previousRightRow - 1, CARD_WIDTH, palette.borderCoral("║"));
+    }
+
+    await sleep(6);
+  }
+
+  writeAt(0, 1, palette.borderCyan("╔"));
+  writeAt(0, CARD_WIDTH, palette.borderCyan("╗"));
+  writeAt(CARD_HEIGHT - 1, 1, palette.borderCoral("╚"));
+  writeAt(CARD_HEIGHT - 1, CARD_WIDTH, palette.borderCoral("╝"));
+};
+
+const revealContent = async () => {
+  await sleep(80);
+
+  for (let index = 1; index < CARD_HEIGHT - 1; index += 1) {
+    writeAt(index, 1, lines[index]);
+    if (lines[index].replace(ansiPattern, "").trim()) {
+      await sleep(14);
+    }
+  }
+};
+
+const finishAnimatedOutput = () => {
+  process.stdout.write(
+    positionFromOrigin(CARD_HEIGHT - 1, 1) + "\r\n" + SHOW_CURSOR
+  );
+};
+
+const renderAnimatedCard = async () => {
+  let cursorHidden = false;
+
+  const restoreCursorAndExit = (signal) => {
+    if (cursorHidden) {
+      process.stdout.write(SHOW_CURSOR);
+    }
+    process.stdout.write("\n");
+    process.exit(signal === "SIGINT" ? 130 : 143);
+  };
+
+  process.once("SIGINT", restoreCursorAndExit);
+  process.once("SIGTERM", restoreCursorAndExit);
+
+  try {
+    reserveCardArea();
+    cursorHidden = true;
+    await drawBorderAnimation();
+    await revealContent();
+    finishAnimatedOutput();
+    cursorHidden = false;
+  } finally {
+    process.removeListener("SIGINT", restoreCursorAndExit);
+    process.removeListener("SIGTERM", restoreCursorAndExit);
+
+    if (cursorHidden) {
+      process.stdout.write(SHOW_CURSOR);
+    }
+  }
+};
+
+if (shouldAnimate) {
+  renderAnimatedCard().catch((error) => {
+    process.stdout.write(SHOW_CURSOR);
+    console.error(error);
+    process.exitCode = 1;
+  });
+} else {
+  console.log(lines.join("\n"));
+}

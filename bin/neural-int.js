@@ -122,7 +122,6 @@ const info = (icon, key, value) => {
   );
 };
 
-// Scaled to about 60% of the previous Braille rendering while preserving shape.
 const logo = [
   "  ⢰⣿⣿⣿⡟",
   "  ⣾⣿⣿⣿⠃⢶⣶⣶⡶",

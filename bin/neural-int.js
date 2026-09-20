@@ -78,8 +78,9 @@ const info = (icon, key, value) =>
     `"${value}"`
   )}`;
 
+const compactLogo = "⣠⣾⣿⠟⠁⢐⣶⡀";
 const wordmark =
-  `${palette.name("Natsuki Izumi")} ${palette.logo("|i")}`;
+  `${palette.name("Natsuki Izumi")}  ${palette.logo(compactLogo)}`;
 
 const lines = [
   top,

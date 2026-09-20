@@ -49,6 +49,9 @@ const BODY_WIDTH = 84;
 const RIGHT_BORDER_COLUMN = BODY_WIDTH + 4;
 const KEY_COLUMN = 10;
 const SOCIAL_RIGHT_COLUMN = 50;
+const INFO_BLOCK_WIDTH = 44;
+const INFO_ICON_COLUMN = 3 + Math.floor((BODY_WIDTH - INFO_BLOCK_WIDTH) / 2);
+const INFO_KEY_COLUMN = INFO_ICON_COLUMN + 4;
 const ansiPattern = /\u001b\[[0-?]*[ -/]*[@-~]/g;
 
 const visibleLength = (text) => {
@@ -110,19 +113,19 @@ const info = (icon, key, value) => {
 
   if (useTerminalLayout) {
     return (
-      " ".repeat(INFO_INDENT) +
+      `\u001b[${INFO_ICON_COLUMN}G` +
       icon +
-      `\u001b[${KEY_COLUMN}G` +
+      `\u001b[${INFO_KEY_COLUMN}G` +
       keyText
     );
   }
 
-  return (
-    " ".repeat(INFO_INDENT) +
+  const line =
     padVisible(icon, ICON_WIDTH) +
     " " +
-    keyText
-  );
+    keyText;
+
+  return centerBlockLine(line, INFO_BLOCK_WIDTH);
 };
 
 const socialInfo = (leftKey, leftValue, rightKey, rightValue) => {

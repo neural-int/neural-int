@@ -43,7 +43,7 @@ const palette = {
   muted: (text) => paint("38;5;246", text),
   keyword: (text) => paint("1;38;5;255", text),
   key: (text) => paint("1;38;5;255", text),
-  value: (text) => paint("38;5;215", text),
+  value: (text) => paint("38;5;255", text),
   punctuation: (text) => paint("38;5;250", text),
 };
 

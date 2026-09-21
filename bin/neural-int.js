@@ -154,6 +154,7 @@ const rawLogo = [
 const logo = rawLogo.map(palette.logo);
 const logoWidth = Math.max(...rawLogo.map(visibleLength));
 const rawName = "Natsuki Izumi";
+const rawNameWidth = visibleLength(rawName);
 const nameLine = palette.name(rawName);
 const dividerLine = palette.divider("─".repeat(32));
 const socialDividerLine = palette.divider("─".repeat(Math.floor(BODY_WIDTH * 0.8)));
@@ -198,7 +199,10 @@ const moveToFrameTop = () =>
 
 const renderFrame = (frame, redraw = false) => {
   const prefix = redraw ? moveToFrameTop() : "";
-  process.stdout.write(prefix + frame.join("\r\n"));
+  const rendered = frame
+    .map((line) => `${CSI}2K\r${line}`)
+    .join("\r\n");
+  process.stdout.write(prefix + rendered);
 };
 
 const buildBorderFrame = (progress) => {
@@ -258,8 +262,12 @@ const mixRgb = (from, to, amount) => {
 
 const paintRgb = (text, rgb, bold = false) => {
   if (!useColor) return text;
+  const safeRgb = rgb.map(clampByte);
   const prefix = bold ? "1;" : "";
-  return paint(`${prefix}38;2;${rgb[0]};${rgb[1]};${rgb[2]}`, text);
+  return paint(
+    `${prefix}38;2;${safeRgb[0]};${safeRgb[1]};${safeRgb[2]}`,
+    text
+  );
 };
 
 const shimmerText = (text, rowIndex, progress, sweep, bold = false) => {
@@ -308,7 +316,7 @@ const buildHeroFrame = (progress, sweep, settle = false) => {
   const renderedName = settle
     ? palette.name(rawName)
     : shimmerText(rawName, rawLogo.length + 1, progress, sweep, true);
-  frame[10] = row(centerLine(renderedName));
+  frame[10] = row(centerBlockLine(renderedName, rawNameWidth));
 
   return frame;
 };

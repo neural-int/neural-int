@@ -270,32 +270,55 @@ const paintRgb = (text, rgb, bold = false) => {
   );
 };
 
+const SHIMMER_COLORS = [
+  [0, 210, 255],   // cyan
+  [72, 128, 255],  // blue
+  [142, 92, 255],  // violet
+  [245, 80, 214],  // magenta
+  [255, 104, 120], // coral
+  [255, 176, 64],  // orange
+  [255, 224, 92],  // yellow
+  [92, 224, 190],  // mint
+];
+
+const sampleGradient = (colors, position) => {
+  const clamped = Math.max(0, Math.min(0.999999, position));
+  const scaled = clamped * (colors.length - 1);
+  const index = Math.floor(scaled);
+  const local = scaled - index;
+  return mixRgb(colors[index], colors[index + 1], local);
+};
+
 const shimmerText = (text, rowIndex, progress, sweep, bold = false) => {
   if (!useColor) return text;
 
   const chars = Array.from(text);
-  const base = 48 + 174 * progress;
-  const sweepPosition = -6 + sweep * (logoWidth + 20);
-  const cyan = [0, 151, 178];
-  const coral = [204, 78, 0];
+  const base = clampByte(42 + 186 * progress);
+  const sweepPosition = -10 + sweep * (logoWidth + 30);
+  const bandWidth = 14;
+  const halfBand = bandWidth / 2;
   const white = [255, 255, 255];
 
   return chars
     .map((char, columnIndex) => {
       if (char === " ") return char;
 
-      const position = columnIndex + rowIndex * 0.8;
+      // Slight row offset makes the rainbow travel diagonally across the mark.
+      const position = columnIndex + rowIndex * 0.72;
       const distance = position - sweepPosition;
       let rgb = [base, base, base];
 
-      if (Math.abs(distance) < 1.1) {
-        rgb = mixRgb(rgb, white, 0.96);
-      } else if (distance >= -4.5 && distance < -1.1) {
-        const amount = 1 - (Math.abs(distance) - 1.1) / 3.4;
-        rgb = mixRgb(rgb, cyan, 0.82 * amount);
-      } else if (distance > 1.1 && distance <= 4.5) {
-        const amount = 1 - (Math.abs(distance) - 1.1) / 3.4;
-        rgb = mixRgb(rgb, coral, 0.72 * amount);
+      if (Math.abs(distance) <= halfBand) {
+        const bandPosition = (distance + halfBand) / bandWidth;
+        const spectrum = sampleGradient(SHIMMER_COLORS, bandPosition);
+        const edgeFade = 1 - Math.pow(Math.abs(distance) / halfBand, 1.7);
+        rgb = mixRgb(rgb, spectrum, 0.96 * edgeFade);
+
+        // A narrow white glint keeps the motion crisp without washing out
+        // the spectrum around it.
+        if (Math.abs(distance) < 0.75) {
+          rgb = mixRgb(rgb, white, 0.58);
+        }
       }
 
       return paintRgb(char, rgb, bold);

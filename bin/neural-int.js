@@ -141,7 +141,7 @@ const socialInfo = (leftKey, leftValue, rightKey, rightValue) => {
   return centerLine(line);
 };
 
-const logo = [
+const rawLogo = [
   "  ⢰⣿⣿⣿⡟",
   "  ⣾⣿⣿⣿⠃⢶⣶⣶⡶",
   " ⢰⣿⣿⣿⡟ ⠈⢿⡿⠁",
@@ -149,10 +149,12 @@ const logo = [
   "⢀⣿⣿⣿⡏   ⣾⣷",
   "⣼⣿⣿⣿⠃  ⢰⣿⣿⡄",
   "⣿⣿⣿⡟   ⣿⣿⣿⣿",
-].map(palette.logo);
+];
 
-const logoWidth = Math.max(...logo.map(visibleLength));
-const nameLine = palette.name("Natsuki Izumi");
+const logo = rawLogo.map(palette.logo);
+const logoWidth = Math.max(...rawLogo.map(visibleLength));
+const rawName = "Natsuki Izumi";
+const nameLine = palette.name(rawName);
 const dividerLine = palette.divider("─".repeat(32));
 const socialDividerLine = palette.divider("─".repeat(Math.floor(BODY_WIDTH * 0.8)));
 
@@ -244,6 +246,83 @@ const buildBorderFrame = (progress) => {
   return frame;
 };
 
+const clampByte = (value) =>
+  Math.max(0, Math.min(255, Math.round(value)));
+
+const mixRgb = (from, to, amount) => {
+  const t = Math.max(0, Math.min(1, amount));
+  return from.map((channel, index) =>
+    clampByte(channel + (to[index] - channel) * t)
+  );
+};
+
+const paintRgb = (text, rgb, bold = false) => {
+  if (!useColor) return text;
+  const prefix = bold ? "1;" : "";
+  return paint(`${prefix}38;2;${rgb[0]};${rgb[1]};${rgb[2]}`, text);
+};
+
+const shimmerText = (text, rowIndex, progress, sweep, bold = false) => {
+  if (!useColor) return text;
+
+  const chars = Array.from(text);
+  const base = 48 + 174 * progress;
+  const sweepPosition = -6 + sweep * (logoWidth + 20);
+  const cyan = [0, 151, 178];
+  const coral = [204, 78, 0];
+  const white = [255, 255, 255];
+
+  return chars
+    .map((char, columnIndex) => {
+      if (char === " ") return char;
+
+      const position = columnIndex + rowIndex * 0.8;
+      const distance = position - sweepPosition;
+      let rgb = [base, base, base];
+
+      if (Math.abs(distance) < 1.1) {
+        rgb = mixRgb(rgb, white, 0.96);
+      } else if (distance >= -4.5 && distance < -1.1) {
+        const amount = 1 - (Math.abs(distance) - 1.1) / 3.4;
+        rgb = mixRgb(rgb, cyan, 0.82 * amount);
+      } else if (distance > 1.1 && distance <= 4.5) {
+        const amount = 1 - (Math.abs(distance) - 1.1) / 3.4;
+        rgb = mixRgb(rgb, coral, 0.72 * amount);
+      }
+
+      return paintRgb(char, rgb, bold);
+    })
+    .join("");
+};
+
+const buildHeroFrame = (progress, sweep, settle = false) => {
+  const frame = buildBorderFrame(1);
+
+  rawLogo.forEach((line, index) => {
+    const rendered = settle
+      ? palette.logo(line)
+      : shimmerText(line, index, progress, sweep);
+    frame[2 + index] = row(centerBlockLine(rendered, logoWidth));
+  });
+
+  const renderedName = settle
+    ? palette.name(rawName)
+    : shimmerText(rawName, rawLogo.length + 1, progress, sweep, true);
+  frame[10] = row(centerLine(renderedName));
+
+  return frame;
+};
+
+const buildContentFrame = (lastVisibleLine) => {
+  const frame = buildHeroFrame(1, 1, true);
+
+  for (let index = 11; index <= lastVisibleLine; index += 1) {
+    frame[index] = lines[index];
+  }
+
+  return frame;
+};
+
 const renderAnimatedCard = async () => {
   let cursorHidden = false;
 
@@ -262,16 +341,45 @@ const renderAnimatedCard = async () => {
     process.stdout.write(HIDE_CURSOR);
     cursorHidden = true;
 
-    const steps = 28;
+    const borderSteps = 28;
     renderFrame(buildBorderFrame(0));
 
-    for (let step = 1; step <= steps; step += 1) {
+    for (let step = 1; step <= borderSteps; step += 1) {
       await sleep(12);
-      renderFrame(buildBorderFrame(step / steps), true);
+      renderFrame(buildBorderFrame(step / borderSteps), true);
     }
 
-    await sleep(90);
-    renderFrame(lines, true);
+    await sleep(60);
+
+    const heroSteps = 20;
+    for (let step = 0; step <= heroSteps; step += 1) {
+      const progress = step / heroSteps;
+      const sweep = Math.min(1, progress * 1.18);
+      renderFrame(buildHeroFrame(progress, sweep), true);
+      await sleep(26);
+    }
+
+    renderFrame(buildHeroFrame(1, 1, true), true);
+    await sleep(85);
+
+    const revealSequence = [
+      [11, 75],
+      [12, 70],
+      [13, 34],
+      [14, 34],
+      [15, 34],
+      [16, 60],
+      [17, 55],
+      [18, 0],
+    ];
+
+    for (const [lineIndex, delay] of revealSequence) {
+      renderFrame(buildContentFrame(lineIndex), true);
+      if (delay > 0) {
+        await sleep(delay);
+      }
+    }
+
     process.stdout.write("\r\n" + SHOW_CURSOR);
     cursorHidden = false;
   } finally {

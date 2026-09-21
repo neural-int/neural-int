@@ -368,7 +368,8 @@ const renderAnimatedCard = async () => {
     }
 
     renderFrame(buildHeroFrame(1, 1, true), true);
-    await sleep(85);
+    // Let the completed logo/name composition breathe before revealing INFO.
+    await sleep(320);
 
     const revealSequence = [
       [11, 75],

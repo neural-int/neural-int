@@ -1,4 +1,4 @@
-# Natsuki — Neural Integration
+# Natsuki by Neural Integration
 
 Software Engineer focused on UI/UX, developer tools, and practical AI integration.
 

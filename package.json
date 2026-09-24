@@ -1,9 +1,9 @@
 {
-  "name": "neural-int",
+  "name": "natsuki-izumi",
   "version": "0.1.0",
   "description": "Natsuki Izumi's terminal profile card.",
   "bin": {
-    "neural-int": "./bin/neural-int.js"
+    "natsuki-izumi": "./bin/neural-int.js"
   },
   "files": [
     "bin"

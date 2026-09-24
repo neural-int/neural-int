@@ -3,7 +3,7 @@
 Software Engineer focused on UI/UX, developer tools, and practical AI integration.
 
 ```bash
-npx neural-int
+npx natsuki-izumi
 ```
 
 - Website: [natsuki123.com](https://natsuki123.com)

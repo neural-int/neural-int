@@ -5,7 +5,7 @@ const { version } = require("../package.json");
 const args = new Set(process.argv.slice(2));
 
 if (args.has("--help") || args.has("-h")) {
-  console.log(`Usage: neural-int [options]
+  console.log(`Usage: natsuki-izumi [options]
 
 Natsuki Izumi's terminal profile card.
 
